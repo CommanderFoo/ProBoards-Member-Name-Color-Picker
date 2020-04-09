@@ -1,0 +1,12 @@
+#member-name-color-picker-field {
+
+	position: fixed;
+	display: none;
+
+}
+
+#member-name-color-picker-label {
+
+	cursor: pointer;
+
+}
