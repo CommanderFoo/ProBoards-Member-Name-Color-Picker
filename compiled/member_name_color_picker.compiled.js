@@ -20,8 +20,6 @@ var Member_Name_Color_Picker = function () {
 			this.SETTINGS = {};
 			this.IMAGES = {};
 
-			this.COLOR_FIELD = null;
-
 			if (typeof yootil == "undefined") {
 				console.error("Member Name Color Picker: Yootil not installed");
 				return;
@@ -30,10 +28,9 @@ var Member_Name_Color_Picker = function () {
 			this.setup();
 			this.setup_data();
 
-			if (yootil.user.logged_in()) {
-				this.create_color_field();
-				this.create_plugin_icon();
-			}
+			yootil.bar.add("#", this.IMAGES.color, "Set Your Name Color", "member-name-color-picker", function () {
+				return null;
+			});
 
 			$(this.ready.bind(this));
 		}
@@ -41,7 +38,7 @@ var Member_Name_Color_Picker = function () {
 		key: "ready",
 		value: function ready() {
 			if (yootil.user.logged_in()) {
-				this.alter_plugin_icon();
+				this.create_color_field();
 			}
 
 			var location_check = yootil.location.search_results() || yootil.location.message_thread() || yootil.location.thread() || yootil.location.recent_posts() || yootil.location.recent_threads() || yootil.location.message_list() || yootil.location.members() || yootil.location.board();
@@ -84,9 +81,18 @@ var Member_Name_Color_Picker = function () {
 		value: function create_color_field() {
 			var _this = this;
 
-			var $color_field = $("<input type='color' name='member-name-color-picker-field' id='member-name-color-picker-field' value='' />");
+			var user_id = parseInt(yootil.user.id(), 10);
+			var user_color = "";
 
-			$color_field.appendTo("body");
+			if (this.KEY_DATA.has(user_id)) {
+				var _user_color = this.KEY_DATA.get(user_id);
+
+				if (this.is_valid_color(_user_color)) {
+					user_color = _user_color;
+				}
+			}
+
+			var $color_field = $("<input type='color' name='member-name-color-picker-field' id='member-name-color-picker-field' value='" + pb.text.escape_html(user_color) + "' />");
 
 			$color_field.on("input", function (e) {
 
@@ -96,14 +102,20 @@ var Member_Name_Color_Picker = function () {
 			$color_field.on("change", function (e) {
 
 				if (_this.is_valid_color(e.target.value)) {
-					var user_id = parseInt(yootil.user.id(), 10);
+					var _user_id = parseInt(yootil.user.id(), 10);
 
-					yootil.key.set(_this.PLUGIN_KEY, e.target.value, user_id);
+					yootil.key.set(_this.PLUGIN_KEY, e.target.value, _user_id);
 
-					_this.KEY_DATA.set(user_id, e.target.color);
+					_this.KEY_DATA.set(_user_id, e.target.color);
 					_this.apply_color($(".user-link"));
 				}
 			});
+
+			$color_field.attr("title", "Change your display name color");
+
+			var $item = $(yootil.bar.get("member-name-color-picker"));
+
+			$item.replaceWith($color_field);
 		}
 	}, {
 		key: "is_valid_color",
@@ -113,20 +125,6 @@ var Member_Name_Color_Picker = function () {
 			}
 
 			return false;
-		}
-	}, {
-		key: "create_plugin_icon",
-		value: function create_plugin_icon() {
-			yootil.bar.add("#", this.IMAGES.color, "Set Your Name Color", "member-name-color-picker", function () {});
-		}
-	}, {
-		key: "alter_plugin_icon",
-		value: function alter_plugin_icon() {
-			var $item = $(yootil.bar.get("member-name-color-picker"));
-			var $img = $item.find("img");
-			var $label = $img.wrap("<label id='member-name-color-picker-label' for='member-name-color-picker-field'>").parent();
-
-			$item.replaceWith($label);
 		}
 	}, {
 		key: "monitor_shoutbox",
@@ -183,7 +181,7 @@ var Member_Name_Color_Picker = function () {
 					var color = preview ? preview : _this2.KEY_DATA.get(id);
 
 					if (_this2.is_valid_color(color)) {
-						$(e).css("color", yootil.html_encode(color));
+						$(e).css("color", pb.text.escape_html(color));
 					}
 				}
 			});

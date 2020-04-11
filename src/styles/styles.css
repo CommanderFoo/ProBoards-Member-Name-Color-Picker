@@ -1,12 +1,11 @@
 #member-name-color-picker-field {
 
-	position: fixed;
-	display: none;
-
-}
-
-#member-name-color-picker-label {
-
+	width: 16px;
+	height: 16px;
+	padding: 0px;
+	position: relative;
+	top: -3px;
+	margin-right: 3px;
 	cursor: pointer;
 
 }

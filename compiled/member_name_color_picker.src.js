@@ -9,8 +9,6 @@ class Member_Name_Color_Picker {
 		this.SETTINGS = {};
 		this.IMAGES = {};
 
-		this.COLOR_FIELD = null;
-
 		if(typeof yootil == "undefined"){
 			console.error("Member Name Color Picker: Yootil not installed");
 			return;
@@ -19,17 +17,14 @@ class Member_Name_Color_Picker {
 		this.setup();
 		this.setup_data();
 
-		if(yootil.user.logged_in()){
-			this.create_color_field();
-			this.create_plugin_icon();
-		}
+		yootil.bar.add("#", this.IMAGES.color, "Set Your Name Color", "member-name-color-picker", () => null);
 
 		$(this.ready.bind(this));
 	}
 
 	static ready(){
 		if(yootil.user.logged_in()){
-			this.alter_plugin_icon();
+			this.create_color_field();
 		}
 
 		let location_check = (
@@ -76,9 +71,18 @@ class Member_Name_Color_Picker {
 	}
 
 	static create_color_field(){
-		let $color_field = $("<input type='color' name='member-name-color-picker-field' id='member-name-color-picker-field' value='' />");
+		let user_id = parseInt(yootil.user.id(), 10);
+		let user_color = "";
 
-		$color_field.appendTo("body");
+		if(this.KEY_DATA.has(user_id)){
+			let _user_color = this.KEY_DATA.get(user_id);
+
+			if(this.is_valid_color(_user_color)){
+				user_color = _user_color;
+			}
+		}
+
+		let $color_field = $("<input type='color' name='member-name-color-picker-field' id='member-name-color-picker-field' value='" + pb.text.escape_html(user_color) + "' />");
 
 		$color_field.on("input", e => {
 
@@ -98,6 +102,12 @@ class Member_Name_Color_Picker {
 			}
 
 		});
+
+		$color_field.attr("title", "Change your display name color");
+
+		let $item = $(yootil.bar.get("member-name-color-picker"));
+
+		$item.replaceWith($color_field);
 	}
 
 	static is_valid_color(c){
@@ -106,18 +116,6 @@ class Member_Name_Color_Picker {
 		}
 
 		return false;
-	}
-
-	static create_plugin_icon(){
-		yootil.bar.add("#", this.IMAGES.color, "Set Your Name Color", "member-name-color-picker", () => {});
-	}
-
-	static alter_plugin_icon(){
-		let $item = $(yootil.bar.get("member-name-color-picker"));
-		let $img = $item.find("img");
-		let $label = $img.wrap("<label id='member-name-color-picker-label' for='member-name-color-picker-field'>").parent();
-
-		$item.replaceWith($label);
 	}
 
 	static monitor_shoutbox(){
@@ -168,7 +166,7 @@ class Member_Name_Color_Picker {
 				let color = (preview)? preview : this.KEY_DATA.get(id);
 
 				if(this.is_valid_color(color)){
-					$(e).css("color", yootil.html_encode(color));
+					$(e).css("color", pb.text.escape_html(color));
 				}
 			}
 
